@@ -4,6 +4,7 @@
 import gym
 import numpy as np
 import tensorflow as tf
+import time
 import replayMemory
 
 env = gym.make('LunarLander-v2')
@@ -22,6 +23,7 @@ DISCOUNT_FACTOR=0.99
 NUM_EPISODES=5000
 RENDER=False
 EPISODE_CHECKPOINT=25
+TIME_CHECKPOINT=100
 
 LOGS_PATH="/tmp/lander_logs"
 SAVE_PATH="tmp/lander_weights"
@@ -92,9 +94,17 @@ sess.run(init_op)
     
 landed=False
 moving_average=0
+time0=time.time()
 for episode in range(NUM_EPISODES):  
     if episode%EPISODE_CHECKPOINT==0:
         print "Episode",episode,"of",NUM_EPISODES
+        if episode%TIME_CHECKPOINT==0:
+            time1=time.time()
+            elapsed_time=time1-time0
+            h=int(elapsed_time/3600)
+            m=int((elapsed_time%3600)/60)
+            s=elapsed_time%60
+            print "Elapsed time:",h,"h",m,",m",s,"s"
     done=False
     state=env.reset()
     acc_reward=0
