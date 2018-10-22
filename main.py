@@ -19,11 +19,12 @@ MEMORY_MAX_SIZE=1e6
 L2_LAMBDA=1e-3
 DISCOUNT_FACTOR=0.99
 
-NUM_EPISODES=100000
+NUM_EPISODES=5000
 RENDER=False
 EPISODE_CHECKPOINT=25
 
 LOGS_PATH="/tmp/lander_logs"
+SAVE_PATH="tmp/lander_weights"
 INDEX_STATE=0
 INDEX_REWARD=1
 INDEX_DONE=2
@@ -84,11 +85,13 @@ loss_sum=tf.summary.scalar("loss", loss_summary)
 re_sum=tf.summary.scalar("reward", reward_summary)
 
 summaryMerged=tf.summary.merge_all()
-saver = tf.train.Saver()
+saver=tf.train.Saver()
 init_op=tf.global_variables_initializer()
 tf.get_default_graph().finalize()
 sess.run(init_op)   
     
+landed=False
+moving_average=0
 for episode in range(NUM_EPISODES):  
     if episode%EPISODE_CHECKPOINT==0:
         print "Episode",episode,"of",NUM_EPISODES
@@ -109,6 +112,9 @@ for episode in range(NUM_EPISODES):
             epsilon=-9e-7*frame+1
         new_state,reward,done,_=env.step(action)
         acc_reward+=reward
+        if reward==100 and not landed:
+            print "First successful landing!"
+            landed=True
         # Store transition
         replayMemory.add(new_state,reward,done,state,action)
         state=new_state
@@ -134,9 +140,11 @@ for episode in range(NUM_EPISODES):
             # Update target network
             sess.run(update_target_ops)
             if done:
-                mean_reward=float(acc_reward)/epoch
-                sumOut=sess.run(re_sum,feed_dict={reward_summary:mean_reward})
+                sumOut=sess.run(re_sum,feed_dict={reward_summary:acc_reward})
                 writer.add_summary(sumOut,episode)
+                moving_average=0.99*moving_average+0.01*acc_reward
+                if moving_average>=200:
+                    print "Problem solved after",episode,"episodes!"
                 acc_reward=0
                 # record loss
                 mean_loss=float(acc_loss)/(epoch)
