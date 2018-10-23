@@ -103,7 +103,7 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
     tf.reset_default_graph()
     sess=tf.Session()
     
-    replayMemory=replayMemory.ReplayMemory(MINIBATCH_SIZE,MEMORY_MAX_SIZE,VAR_SIZE_DIC)
+    my_replayMemory=replayMemory.ReplayMemory(MINIBATCH_SIZE,MEMORY_MAX_SIZE,VAR_SIZE_DIC)
     
     state_input_tensor=tf.placeholder(tf.float32, shape=(None,STATE_SIZE),name="state_input_tensor")
     target_Q_tensor=tf.placeholder(tf.float32, shape=(None,ACTION_SPACE),name="Q_tensor")
@@ -182,7 +182,7 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
                     episodes_to_solution=episode
                     time_to_solution=time.time()-t0
             # Store transition
-            replayMemory.add(new_state,reward,done,state,action)
+            my_replayMemory.add(new_state,reward,done,state,action)
             state=new_state
             if episode>WARMUP_EPISODES:
                 if not learning_has_started:
@@ -190,12 +190,12 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
                     learning_has_started=True
                 frame+=1
                 #Sample minibatch
-                minibatch=replayMemory.get_batch()
-                S=replayMemory.get_from_minibatch(minibatch,INDEX_STATE)
-                St0=replayMemory.get_from_minibatch(minibatch,INDEX_LAST_STATE)
-                A=replayMemory.get_from_minibatch(minibatch,INDEX_ACTION)
-                D=replayMemory.get_from_minibatch(minibatch,INDEX_DONE)
-                R=replayMemory.get_from_minibatch(minibatch,INDEX_REWARD)     
+                minibatch=my_replayMemory.get_batch()
+                S=my_replayMemory.get_from_minibatch(minibatch,INDEX_STATE)
+                St0=my_replayMemory.get_from_minibatch(minibatch,INDEX_LAST_STATE)
+                A=my_replayMemory.get_from_minibatch(minibatch,INDEX_ACTION)
+                D=my_replayMemory.get_from_minibatch(minibatch,INDEX_DONE)
+                R=my_replayMemory.get_from_minibatch(minibatch,INDEX_REWARD)     
                 # Create targets
                 next_states_Q=R+DISCOUNT_FACTOR*np.reshape(np.max(sess.run(output_target,feed_dict={state_input_tensor:S}),axis=-1),(MINIBATCH_SIZE,1))*(1-D)
                 target_Q=sess.run(output,feed_dict={state_input_tensor:St0})
