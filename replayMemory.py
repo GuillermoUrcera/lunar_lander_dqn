@@ -9,7 +9,7 @@ import collections
 import random
 import numpy as np
 
-class replayMemory:
+class ReplayMemory:
     def __init__(self,minibatch_size,max_size,size_dic):
         self.memory=collections.deque(maxlen=max_size)
         self.minibatch_size=minibatch_size
