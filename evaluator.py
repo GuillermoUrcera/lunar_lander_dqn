@@ -6,6 +6,7 @@ Created on Sun Oct 21 20:16:53 2018
 @author: guille
 """
 import tensorflow as tf
+import numpy as np
 import gym
 
 # Enviroment parameters
@@ -42,9 +43,12 @@ saver.restore(sess,SAVE_PATH)
 
 # Evaluate model
 for e in range(EPISODES_TO_EVALUATE):
-	state=env.reset()
-	for i in range(EPOCHS_PER_EPISODE_TO_EVALUATE):
-		if VISUALIZE_EVALUATOR:
+    done=False
+    state=env.reset()
+    while not done:
+        if VISUALIZE_EVALUATOR:
 			env.render()
-		state,reward,done, _=env.step(sess.run(output,feed_dict={state_input_tensor:[state]}))
-	env.render(close=True)
+        Qs=sess.run(output,feed_dict={state_input_tensor:[state]})
+        action=np.argmax(Qs)
+        state,reward,done, _=env.step(action)
+env.render(close=True)
