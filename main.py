@@ -180,7 +180,7 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
                 landed=True
                 if TUNING:
                     episodes_to_solution=episode
-                    time_to_solution=time.time()-t0
+                    time_to_solution=time.time()-time0
             # Store transition
             my_replayMemory.add(new_state,reward,done,state,action)
             state=new_state
@@ -212,7 +212,7 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
                     if episode%100==0:
                         # Check if rewards have stagnated and reduce learning rate
                         if last_average!=0:
-                            if (moving_average-last_average<(0.01*moving_average)) and (LEARNIG_RATE>0.001):
+                            if (moving_average-last_average<(0.01*moving_average)) and (LEARNING_RATE>0.001):
                                 LEARNING_RATE*=LEARNING_RATE_DECAY
                         last_average=moving_average
                     if moving_average>=200:
