@@ -99,6 +99,7 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
     acc_loss=0
     time_to_solution=-1
     episodes_to_solution=-1
+    early_stop=False
     
     tf.reset_default_graph()
     sess=tf.Session()
@@ -148,7 +149,9 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
     landed=False
     moving_average=0
     time0=time.time()
-    for episode in range(NUM_EPISODES):  
+    for episode in range(NUM_EPISODES):
+        if early_stop:
+            break
         if episode%EPISODE_CHECKPOINT==0:
             print "Episode",episode,"of",NUM_EPISODES
             if episode%TIME_CHECKPOINT==0:
@@ -178,9 +181,6 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
             if reward==100 and not landed:
                 print "First successful landing!"
                 landed=True
-                if TUNING:
-                    episodes_to_solution=episode
-                    time_to_solution=time.time()-time0
             # Store transition
             my_replayMemory.add(new_state,reward,done,state,action)
             state=new_state
@@ -217,6 +217,11 @@ for tuning_iteration in range(TUNING_ITERATIONS): #TUNING_ITERATIONS = 1 if ther
                         last_average=moving_average
                     if moving_average>=200:
                         print "Problem solved after",episode,"episodes!"
+                        if TUNING:
+                            episodes_to_solution=episode
+                            time_to_solution=time.time()-time0
+                            early_stop=True
+                            break
                     acc_reward=0
                     # record loss
                     mean_loss=float(acc_loss)/(epoch)
